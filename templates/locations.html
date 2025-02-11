@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/main.css">
+    <title>Concert Locations</title>
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+    <link rel="stylesheet" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css">
+    <style>
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <header>
+        <div class="logo-container">
+            <img src="static/Screenshot_from_2024-10-17_23-52-31-removebg-preview.png" alt="Logo" class="logo">
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <h1 class="main-title">Concert Locations</h1>
+            <div id="locations-list">
+                {{range .}}
+                <div class="location-item">
+                    <ul>
+                        {{range .Locations}}
+                        <li>{{.}}</li>
+                        {{end}}
+                    </ul>
+                </div>
+                {{end}}
+            </div>
+            <a href="/artist" class="back-home-button">Back Page</a>
+        </div>
+    </main>
+    <div id="map"></div>
+    
+    <!-- Add this to store the location data -->
+    <script id="locations-data" type="application/json">
+        {{.}}
+    </script>
+
+    <footer>
+        <div class="footer-content">
+            <p class="footer-text">&copy; 2024 Music Lovers. All rights reserved.</p>
+            <p class="footer-text">🎶 Dive into the world of legendary artists and their iconic masterpieces! Explore, discover, and celebrate the music that shaped our lives.</p>
+        </div>
+    </footer>
+
+    <script>
+        function initMap() {
+    var platform = new H.service.Platform({
+        apikey: "8UIoooRk33BTptWdvimLIiIWA-Ss0T8LguDmhzb8-Xs"
+    });
+    var defaultLayers = platform.createDefaultLayers();
+    var map = new H.Map(
+        document.getElementById("map"),
+        defaultLayers.vector.normal.map,
+        {
+            zoom: 3,
+            center: { lat: 0, lng: 0 } // Default center
+        }
+    );
+
+    var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+    var ui = H.ui.UI.createDefault(map, defaultLayers);
+    
+    // Extract locations from HTML
+    let locationElements = document.querySelectorAll("#locations-list li");
+    let locationNames = Array.from(locationElements).map(el => el.textContent.trim());
+
+    // Function to get coordinates using HERE Geocoder
+    function getCoordinates(locationName, callback) {
+        var service = platform.getSearchService();
+        service.geocode({
+            q: locationName
+        }, (result) => {
+            if (result.items.length > 0) {
+                let position = result.items[0].position;
+                callback(position.lat, position.lng);
+            }
+        }, (error) => {
+            console.error(`Geocoding error for ${locationName}:`, error);
+        });
+    }
+
+    // Add markers dynamically
+    let group = new H.map.Group();
+    locationNames.forEach(location => {
+        getCoordinates(location, (lat, lng) => {
+            let marker = new H.map.Marker({ lat, lng });
+            group.addObject(marker);
+
+            // Center the map on the first valid location
+            if (group.getObjects().length === 1) {
+                map.setCenter({ lat, lng });
+            }
+        });
+    });
+
+    map.addObject(group);
+}
+
+window.onload = initMap;
+
+    </script>
+</body>
+</html>
