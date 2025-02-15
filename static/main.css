@@ -12,6 +12,8 @@ body {
     background-size: cover; 
     background-position: center; 
     background-repeat: no-repeat; 
+    background-attachment: fixed; /* Makes the background fixed */
+    background-position: center;
     color: #ffffff;
     margin: 0;
     padding: 0;

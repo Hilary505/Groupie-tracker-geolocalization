@@ -10,8 +10,10 @@ body {
     background-image: url('DeWatermark.ai_1729187425938-min.png');
     background-size: cover;
     background-position: center;
+    background-attachment: fixed; /* Make the background sticky/fixed */
     position: relative;
     overflow: hidden;
+    
 }
 
 body::before {
@@ -93,14 +95,6 @@ header {
 
 .artist-button:hover::after {
     transform: scaleX(1); /* Show underline on hover */
-}
-
-.search-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
 }
 
 #search-bar {
