@@ -53,70 +53,70 @@
    <script id="locations-data" type="application/json">
     {{.}}
 </script>
-<script>
-    function initMap() {
-        var platform = new H.service.Platform({
-            apikey: "8UIoooRk33BTptWdvimLIiIWA-Ss0T8LguDmhzb8-Xs"
-        });
-        var defaultLayers = platform.createDefaultLayers();
-        var map = new H.Map(
-            document.getElementById("map"),
-            defaultLayers.vector.normal.map,
-            {
-                zoom: 3,
-                center: { lat: 0, lng: 0 }, // Default center
-                pixelRatio: window.devicePixelRatio || 1
-            }
-        );
-        var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-        var ui = H.ui.UI.createDefault(map, defaultLayers);
-
-        // Get the locations data from the script tag
-        const locationsData = document.getElementById('locations-data').textContent;
-        console.log(locationsData); // Check this output in the console
-
-        try {
-            const locations = JSON.parse(locationsData); // Parse the JSON string
-            let mapCenter = { lat: 0, lng: 0 }; // Default center
-
-            // Iterate over locations to add markers
-            locations.forEach(location => {
-                // Check that Locations, Lat, and Lon are all the same length
-                const numCities = location.Locations.length;
-
-                for (let i = 0; i < numCities; i++) {
-                    const cityName = location.Locations[i];
-                    const lat = location.Lat[i];  
-                    const lng = location.Lon[i];  
-                    if (lat && lng) {
-                        // Create a marker for each city
-                        const marker = new H.map.Marker({ lat: lat, lng: lng });
-                        map.addObject(marker);
-
-                        // Set map center based on the first valid marker
-                        if (mapCenter.lat === 0 && mapCenter.lng === 0) {
-                            mapCenter = { lat, lng };
-                            map.setCenter(mapCenter);
-                        }
-                    } else {
-                        console.log(`No coordinates found for ${cityName}`);
-                    }
-                }
-            });
-        } catch (err) {
-            console.error("Error parsing locations data: ", err);
+ <script>
+   function initMap() {
+    var platform = new H.service.Platform({
+        apikey: "8UIoooRk33BTptWdvimLIiIWA-Ss0T8LguDmhzb8-Xs"
+    });
+    var defaultLayers = platform.createDefaultLayers();
+    var map = new H.Map(
+        document.getElementById("map"),
+        defaultLayers.vector.normal.map,
+        {
+            zoom: 3,
+            center: { lat: 0, lng: 0 } // Default center
         }
-    }
-    window.onload = initMap;
-</script>
+    );
+    var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+    var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+    const locationsData = document.getElementById('locations-data').textContent;
+
+console.log(locationsData); // Check this output in the console
+
+try {
+    const locations = JSON.parse(locationsData); // Parse the JSON string
+
+    let mapCenter = { lat: 0, lng: 0 }; // Default center
+
+    locations.forEach(location => {
+        // Iterate over the locations (cities)
+        location.locations.forEach((cityName, index) => {
+            const lat = location.lat[index];  // Get the corresponding latitude from the lat slice
+            const lng = location.lon[index];  // Get the corresponding longitude from the lon slice
+
+            // Ensure both lat and lng are available
+            if (lat && lng) {
+                const marker = new H.map.Marker({ lat: lat, lng: lng });
+                map.addObject(marker);
+
+                // Set map center based on the first valid marker
+                if (mapCenter.lat === 0 && mapCenter.lng === 0) {
+                    mapCenter = { lat, lng };
+                    map.setCenter(mapCenter);
+                }
+
+            } else {
+                console.log(`No coordinates found for ${cityName}`);
+            }
+        });
+    });
+
+} catch (err) {
+    console.error("Error parsing locations data: ", err);
+}
+
+}
+
+window.onload = initMap;
+
+    </script>
 </body>
 </html>
-
 <style>
     #map {
     width: 900px;
     height: 500px;
     margin-left: 25%;
 }
-
 </style>
