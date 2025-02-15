@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"geolocalization/models"
-	// "tracker/models"
 )
 
 // FetchLocations retrieves location data from the API.
@@ -39,7 +38,7 @@ func FetchLocations(artistID int, w http.ResponseWriter, r *http.Request) (wrapp
 	var geocodedLocations []models.Location
 	for _, loc := range locationIndex.Index {
 		if loc.ID == artistID { // Only process the requested artist
-			lat, lon, geoErr := GeocodeLocation(loc.Locations)
+			allLat, allLon, geoErr := GeocodeLocation(loc.Locations)
 			if geoErr != nil {
 				fmt.Println("Geocoding error:", geoErr)
 				continue
@@ -48,21 +47,22 @@ func FetchLocations(artistID int, w http.ResponseWriter, r *http.Request) (wrapp
 
 			geocodedLocations = append(geocodedLocations, models.Location{
 				Locations: formatLocation,
-				Lat:       lat,
-				Lon:       lon,
+				Lat:       allLat,
+				Lon:       allLon,
 			})
-			break // Stop looping after finding the first match
 		}
 	}
-	wrapper = locationIndex.Index
+	wrapper = geocodedLocations
 	return wrapper, nil
 }
 
-func GeocodeLocation(locationNames []string) (lat, lon float64, err error) {
+func GeocodeLocation(locationNames []string) (alllat, alllon []float64, err error) {
 	baseURL := "https://geocode.search.hereapi.com/v1/geocode"
-	apiKey := "8UIoooRk33BTptWdvimLIiIWA-Ss0T8LguDmhzb8-Xs"
+	apiKey := "8UIoooRk33BTptWdvimLIiIWA-Ss0T8LguDmhzb8-Xs" // Replace with your actual API key
 
-	// Iterate through each location in the list
+	var allLat []float64
+	var allLon []float64
+
 	for _, locationName := range locationNames {
 		params := url.Values{}
 		params.Set("q", locationName)
@@ -73,8 +73,8 @@ func GeocodeLocation(locationNames []string) (lat, lon float64, err error) {
 		client := &http.Client{Timeout: 5 * time.Second}
 		resp, err := client.Get(reqURL)
 		if err != nil {
-			fmt.Printf("Error geocoding location '%s': %s\n", locationName, err) // Debug message for geocoding failure
-			continue                                                             // If geocoding fails, continue with the next location
+			fmt.Printf("Error geocoding location '%s': %s\n", locationName, err)
+			continue
 		}
 		defer resp.Body.Close()
 
@@ -90,22 +90,21 @@ func GeocodeLocation(locationNames []string) (lat, lon float64, err error) {
 		body, _ := io.ReadAll(resp.Body)
 		if err := json.Unmarshal(body, &result); err != nil {
 			fmt.Printf("Error decoding geocoding response for '%s': %s\n", locationName, err)
-			continue // Skip to the next location if decoding fails
+			continue
 		}
-		var geocodedLocations []string
-		// If coordinates were found for the location, return them
+
 		if len(result.Items) > 0 {
-			lat  = result.Items[0].Position.Lat
-			lon = result.Items[0].Position.Lon
-			//fmt.Printf("Successfully geocoded '%s': %s, %s\n", locationName, lat, lon)
-			geocodedLocations = append(geocodedLocations, fmt.Sprintf("%v,%v", lat, lon))
+			lat := result.Items[0].Position.Lat
+			lon := result.Items[0].Position.Lon
+			allLat = append(allLat, lat)
+			allLon = append(allLon, lon)
 		} else {
-			fmt.Printf("No coordinates found for '%s'.\n", locationName)
+			fmt.Printf("No coordinates found for '%s'\n", locationName)
 		}
 	}
 
-	
-	return 0.0, 0.0 , nil
+	return allLat, allLon, nil
+
 }
 
 func FormatLocations(locations []string) []string {

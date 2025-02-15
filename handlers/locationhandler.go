@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -27,10 +29,19 @@ func LocationHandler(w http.ResponseWriter, r *http.Request) {
 		api.HandleError(w, err, http.StatusInternalServerError, "500.html")
 		return
 	}
+	fmt.Println("Locations before filtering:", locations)
 
 	filteredLocations := filterLocationsByArtistID(locations, artistId)
+	fmt.Println("Filtered Locations:", filteredLocations)
+	locationsJSON, err := json.Marshal(filteredLocations)
+	if err != nil {
+		api.HandleError(w, err, http.StatusInternalServerError, "500.html")
+		return
+	}
+	fmt.Println("Locations JSON:", string(locationsJSON))
 
-	if err := tmplt.ExecuteTemplate(w, "locations.html", filteredLocations); err != nil {
+
+	if err := tmplt.ExecuteTemplate(w, "locations.html", string(locationsJSON)); err != nil {
 		api.HandleError(w, err, http.StatusInternalServerError, "500.html")
 		return
 	}

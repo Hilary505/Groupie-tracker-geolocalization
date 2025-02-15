@@ -43,20 +43,18 @@
     </main>
     <div id="map"></div>
     
-    <!-- Add this to store the location data -->
-    <script id="locations-data" type="application/json">
-        {{.}}
-    </script>
-
     <footer>
         <div class="footer-content">
             <p class="footer-text">&copy; 2024 Music Lovers. All rights reserved.</p>
             <p class="footer-text">🎶 Dive into the world of legendary artists and their iconic masterpieces! Explore, discover, and celebrate the music that shaped our lives.</p>
         </div>
     </footer>
-
-    <script>
-        function initMap() {
+   <!-- Add this to store the location data -->
+   <script id="locations-data" type="application/json">
+    {{.}}
+</script>
+ <script>
+   function initMap() {
     var platform = new H.service.Platform({
         apikey: "8UIoooRk33BTptWdvimLIiIWA-Ss0T8LguDmhzb8-Xs"
     });
@@ -69,44 +67,45 @@
             center: { lat: 0, lng: 0 } // Default center
         }
     );
-
     var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
     var ui = H.ui.UI.createDefault(map, defaultLayers);
-    
-    // Extract locations from HTML
-    let locationElements = document.querySelectorAll("#locations-list li");
-    let locationNames = Array.from(locationElements).map(el => el.textContent.trim());
 
-    // Function to get coordinates using HERE Geocoder
-    function getCoordinates(locationName, callback) {
-        var service = platform.getSearchService();
-        service.geocode({
-            q: locationName
-        }, (result) => {
-            if (result.items.length > 0) {
-                let position = result.items[0].position;
-                callback(position.lat, position.lng);
-            }
-        }, (error) => {
-            console.error(`Geocoding error for ${locationName}:`, error);
+    // Get the locations data from the script tag
+    const locationsData = document.getElementById('locations-data').textContent;
+    console.log(locationsData); // Check this output in the console
+
+    try {
+        const locations = JSON.parse(locationsData); // Parse the JSON string
+        let mapCenter = { lat: 0, lng: 0 }; // Default center
+
+        locations.forEach(location => {
+            location.Locations.forEach((cityName, index) => {
+                const lat = location.Lat[index];
+                const lng = location.Lon[index];
+
+                if (lat && lng) {
+                    const marker = new H.map.Marker({ lat: lat, lng: lng });
+                    map.addObject(marker);
+
+                    // Set map center based on the first valid marker
+                    if (mapCenter.lat === 0 && mapCenter.lng === 0) {
+                        mapCenter = { lat, lng };
+                        map.setCenter(mapCenter);
+                    }
+
+                    // Add info bubble with city name
+                    const bubble = new H.ui.InfoBubble({ lat: lat, lng: lng }, {
+                        content: cityName
+                    });
+                    ui.addBubble(bubble);
+                } else {
+                    console.log(`No coordinates found for ${cityName}`);
+                }
+            });
         });
+    } catch (err) {
+        console.error("Error parsing locations data: ", err);
     }
-
-    // Add markers dynamically
-    let group = new H.map.Group();
-    locationNames.forEach(location => {
-        getCoordinates(location, (lat, lng) => {
-            let marker = new H.map.Marker({ lat, lng });
-            group.addObject(marker);
-
-            // Center the map on the first valid location
-            if (group.getObjects().length === 1) {
-                map.setCenter({ lat, lng });
-            }
-        });
-    });
-
-    map.addObject(group);
 }
 
 window.onload = initMap;

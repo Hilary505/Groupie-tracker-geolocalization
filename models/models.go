@@ -17,9 +17,10 @@ type Location struct {
 	ID        int      `json:"id"`
 	Locations []string `json:"locations"`
 	Date      string   `json:"dates"`
-	Lon       float64  `json:"longitude"`
-	Lat       float64  `json:"latitude"`
+	Lon       []float64  `json:"lat"`
+	Lat       []float64  `json:"lon"`
 }
+
 type LocationsResponse struct {
 	Index []Location `json:"index"`
 }
@@ -28,13 +29,16 @@ type Date struct {
 	Id    int      `json:"id"`
 	Dates []string `json:"dates"`
 }
+
 type DatesResponse struct {
 	Index []Date `json:"index"`
 }
+
 type Relation struct {
 	ID            int                 `json:"id"`
 	DatesLocation map[string][]string `json:"datesLocations"`
 }
+
 type RelationsResponse struct {
 	Index []Relation `json:"index"`
 }
