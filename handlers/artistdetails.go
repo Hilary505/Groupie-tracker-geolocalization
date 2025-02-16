@@ -44,7 +44,7 @@ func ArtistDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch location data
-	locations, err := api.FetchLocations(artistId,w, r)
+	locations, err := api.FetchLocations(artistId, w, r)
 	if err != nil {
 		api.HandleError(w, err, http.StatusInternalServerError, "500.html")
 		return

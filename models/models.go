@@ -14,11 +14,11 @@ type Artist struct {
 }
 
 type Location struct {
-	ID        int      `json:"id"`
-	Locations []string `json:"locations"`
-	Date      string   `json:"dates"`
-	Lon       []float64  `json:"lat"`
-	Lat       []float64  `json:"lon"`
+	ID        int       `json:"id"`
+	Locations []string  `json:"locations"`
+	Date      string    `json:"dates"`
+	Lon       []float64 `json:"lat"`
+	Lat       []float64 `json:"lon"`
 }
 
 type LocationsResponse struct {

@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+
 	"geolocalization/api"
 	"geolocalization/models"
-	
 )
 
 // RelationHandler handles requests for relations associated with a specific artist.
@@ -30,7 +31,7 @@ func RelationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filteredRelations := filterRelationsByArtistID(relations.Index, artistId)
-
+	fmt.Println("filteredRelations", filteredRelations)
 	if err := tmplt.ExecuteTemplate(w, "relations.html", filteredRelations); err != nil {
 		api.HandleError(w, err, http.StatusInternalServerError, "500.html")
 		return
